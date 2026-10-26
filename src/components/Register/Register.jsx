@@ -1,6 +1,7 @@
 import {
   createUserWithEmailAndPassword,
   sendEmailVerification,
+  updateProfile,
 } from "firebase/auth";
 import React, { useState } from "react";
 import { auth } from "../../firebase/firebase.init";
@@ -12,13 +13,14 @@ const Register = () => {
   const [error, setError] = useState(null);
   const [showPassword, setShowPassword] = useState(false);
 
-  
   const handleRegister = (event) => {
     event.preventDefault();
     const email = event.target.email.value;
     const password = event.target.password.value;
     const terms = event.target.terms.checked;
-    console.log("registerClicked", email, password, terms);
+    const name = event.target.name.value;
+    const photo = event.target.photo.value;
+    console.log("registerClicked", email, password, terms, name, photo);
 
     const length6Pattern = /^.{6,}$/;
     const casePattern = /^(?=.*[a-z])(?=.*[A-Z]).+$/;
@@ -50,6 +52,18 @@ const Register = () => {
         console.log("After creation of a new user", result.user);
         setSuccess(true);
         event.target.reset();
+
+        // update user profile
+        const profile = {
+          displayName: name,
+          photoURL: photo,
+        };
+        updateProfile(result.user, profile)
+          .then()
+          .catch((error) => {
+            console.log(error);
+          });
+
         // send verification
         sendEmailVerification(result.user).then(() => {
           alert("Please login to your email and verify you email address");
@@ -77,6 +91,23 @@ const Register = () => {
             <div className="card-body">
               <form onSubmit={handleRegister}>
                 <fieldset className="fieldset">
+                  {/* Name */}
+                  <label className="label">Name</label>
+                  <input
+                    type="text"
+                    name="name"
+                    className="input"
+                    placeholder="Your Name"
+                  />
+                  {/* user Photo URL */}
+                  <label className="label">Photo URL</label>
+                  <input
+                    type="text"
+                    name="photo"
+                    className="input"
+                    placeholder="Photo URL"
+                  />
+                  {/* Email */}
                   <label className="label">Email</label>
                   <input
                     type="email"
@@ -105,9 +136,7 @@ const Register = () => {
                       Accept Our Terms & Conditions
                     </label>
                   </div>
-                  <div>
-                    <a className="link link-hover">Forgot password?</a>
-                  </div>
+                  
                   <button className="btn btn-neutral mt-4">Register</button>
                 </fieldset>
                 {success && (
